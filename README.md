@@ -148,7 +148,7 @@ Les nœuds sentinelles (`headSentinel` et `tailSentinel`) :
 
 ## 👨‍🎓 Auteur
 
-**Étudiant :** Snoop Frogg
+**Étudiants :** Émile Santerre & Léa Esso-Solam Bikassa
 **Cours :** INF21307 — Structures de données et algorithmes
 **Session :** Hiver 2026
 
