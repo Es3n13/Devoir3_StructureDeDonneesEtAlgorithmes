@@ -4,54 +4,51 @@
 
 #include <iostream>
 
-/**
- * Structure representing a node in the Doubly Linked List.
- */
+//Structure représentant un nœud dans une liste doublement chaînée.
 struct Node {
-    int data;
-    bool isFree;       // Lazy deletion flag: true if the node is logically deleted
-    Node* prev;
-    Node* next;
+    int data; // Valeur stockée dans le nœud
+    bool isFree; // Indicateur de suppression "paresseuse" (true = nœud logiquement supprimé)
+    Node* prev; // Pointeur vers le nœud précédent
+    Node* next; // Pointeur vers le nœud suivant
 
     Node(int val) : data(val), isFree(false), prev(nullptr), next(nullptr) {}
 };
 
-/**
- * Doubly Linked List with Lazy Deletion.
- * Uses sentinel nodes to simplify edge cases (empty list, insertions/deletions at ends).
- */
+
+ //Classe de la liste doublement chaînée.
 class DoublyLinkedList {
 public:
-    DoublyLinkedList();
-    ~DoublyLinkedList();
+    DoublyLinkedList(); // Constructeur crée une liste vide
+    ~DoublyLinkedList(); // Destructeur libère la mémoire allouée
 
-    // Core methods
-    void ajouter(int value);           // Add to end, O(1)
-    Node* trouver(int value);         // Find first active node, O(n)
-    bool supprimer(int value);        // Lazy delete (mark isFree=true), O(n)
-    void compacter();                 // Physically remove all freed nodes, O(n)
-    void afficher() const;            // Display the list (including free nodes for demo)
+    // Méthodes
+    void ajouter(int value); // Ajoute un élément à la fin de la liste.
+    Node* trouver(int value); // Recherche le premier nœud actif contenant la valeur donnée.
+    bool supprimer(int value); // Marque le nœud comme supprimé sans le retirer physiquement.
+    void compacter(); // Supprime physiquement les nœuds marqués comme supprimés.
+    void afficher() const; // Affiche le contenu de la liste.
 
-    // Iterator class
+
+    // Itérateur permettant de parcourir la liste.
     class Iterator {
     private:
-        Node* current;
-        DoublyLinkedList* list;
+        Node* current; // Pointeur vers le nœud actuellement consulté.
+        DoublyLinkedList* list; // Référence vers la liste parcourue.
 
     public:
         Iterator(Node* start, DoublyLinkedList* l);
-        bool hasNext();
-        int next();
+        bool hasNext(); // Indique s’il reste un élément à parcourir
+        int next(); // Retourne la valeur du nœud suivant et avance le pointeur
     };
 
-    Iterator begin();
+    Iterator begin(); // Renvoie un itérateur pointant sur le premier élément.
 
 private:
-    Node* headSentinel;
-    Node* tailSentinel;
+    Node* headSentinel; // Nœud sentinelle en tête de liste (avant le premier vrai élément)
+    Node* tailSentinel; // Nœud sentinelle en fin de liste (après le dernier vrai élément)
 
-    // Internal helper to remove a node physically from the chain
+    // Méthode pur supprimer physiquement un nœud de la chaîne
     void removeNodePhysically(Node* node);
 };
 
-#endif // LISTECHAINEE_H
+#endif

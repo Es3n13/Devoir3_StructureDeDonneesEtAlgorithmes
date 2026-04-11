@@ -1,16 +1,18 @@
 #include "listechainee.h"
 
+//  Constructeur
 DoublyLinkedList::DoublyLinkedList() {
-    // Initialize sentinels
-    // Sentinels are not treated as "free" or "active" data nodes.
-    headSentinel = new Node(-1); // Data is irrelevant for sentinels
+    headSentinel = new Node(-1);
     tailSentinel = new Node(-1);
 
+    // La tête pointe vers la fin, et la fin pointe vers la tête = liste vide
     headSentinel->next = tailSentinel;
     tailSentinel->prev = headSentinel;
 }
 
+// Destructeur
 DoublyLinkedList::~DoublyLinkedList() {
+    // Parcours de la liste entière pour libérer la mémoire de chaque nœud
     Node* current = headSentinel;
     while (current != nullptr) {
         Node* nextNode = current->next;
@@ -19,55 +21,64 @@ DoublyLinkedList::~DoublyLinkedList() {
     }
 }
 
+// Ajouter un élément
 void DoublyLinkedList::ajouter(int value) {
-    // Insert at the end, just before the tailSentinel
+    // Insère un nouveau nœud juste avant la sentinelle de fin
     Node* newNode = new Node(value);
-    Node* lastActive = tailSentinel->prev;
+    Node* lastActive = tailSentinel->prev; // Dernier élément avant la fin
 
+    // Chaînage du nouveau nœud
     newNode->next = tailSentinel;
     newNode->prev = lastActive;
     lastActive->next = newNode;
     tailSentinel->prev = newNode;
 }
 
+// Trouver un élément
 Node* DoublyLinkedList::trouver(int value) {
-    // Iterate from headSentinel->next up to tailSentinel
+    // Parcours depuis le début jusqu’à la fin pour chercher une valeur active
     Node* current = headSentinel->next;
     while (current != tailSentinel) {
         if (!current->isFree && current->data == value) {
-            return current;
+            return current; // Trouvé = retourne le pointeur vers ce nœud
         }
         current = current->next;
     }
-    return nullptr; // Not found or only found as a freed node
+    return nullptr; // Non trouvé ou trouvé dans un nœud marqué supprimé
 }
 
+// Suppression logique d’un nœud
 bool DoublyLinkedList::supprimer(int value) {
+    // Recherche le nœud contenant la valeur
     Node* target = trouver(value);
     if (target) {
-        target->isFree = true; // Lazy deletion
+        target->isFree = true; // Marque le nœud comme supprimé sans le retirer
         return true;
     }
-    return false;
+    return false; // Valeur non trouvée
 }
 
+//  Suppression physique d’un nœud
 void DoublyLinkedList::removeNodePhysically(Node* node) {
+    // Vérifie que le nœud est valide et que ce n’est pas une sentinelle
     if (!node || node == headSentinel || node == tailSentinel) return;
 
     Node* p = node->prev;
     Node* n = node->next;
 
+    // "Détache" le nœud de la chaîne
     p->next = n;
     n->prev = p;
 
-    delete node;
+    delete node; // Libère la mémoire
 }
 
+// Compactage
 void DoublyLinkedList::compacter() {
-    // Iterate and remove all nodes marked as free
+    // Parcourt toute la liste et supprime physiquement les nœuds marqués libres
     Node* current = headSentinel->next;
     while (current != tailSentinel) {
-        Node* nextNode = current->next; // Save next before potential deletion
+        Node* nextNode = current->next; // Sauvegarde du suivant avant suppression
         if (current->isFree) {
             removeNodePhysically(current);
         }
@@ -75,10 +86,12 @@ void DoublyLinkedList::compacter() {
     }
 }
 
+// Affichage de la liste
 void DoublyLinkedList::afficher() const {
     Node* current = headSentinel->next;
     std::cout << "[HEAD] <-> ";
     while (current != tailSentinel) {
+        // Affiche différemment les nœuds supprimés
         if (current->isFree) {
             std::cout << "[FREE:" << current->data << "] <-> ";
         }
@@ -90,32 +103,31 @@ void DoublyLinkedList::afficher() const {
     std::cout << "[TAIL]" << std::endl;
 }
 
-// --- Iterator Implementation ---
-
+// Constructeur de l’itérateur
 DoublyLinkedList::Iterator::Iterator(Node* start, DoublyLinkedList* l)
     : current(start), list(l) {
-    // Ensure the iterator starts at the first active node
+    // Positionner l’itérateur sur le premier nœud non libre
     while (current != nullptr && (list->tailSentinel == current || current->isFree)) {
-        // This logic is slightly simplified; since begin() passes headSentinel->next,
-        // we just need to skip freed nodes.
         if (current == list->tailSentinel) break;
         current = current->next;
     }
 }
 
+// Vérifie s’il reste des éléments à parcourir
 bool DoublyLinkedList::Iterator::hasNext() {
     return (current != nullptr && current != list->tailSentinel);
 }
 
+// Récupère la valeur du nœud courant et avance
 int DoublyLinkedList::Iterator::next() {
     if (!hasNext()) {
-        throw std::out_of_range("No more active elements in the list");
+        throw std::out_of_range("Aucun autre élément actif dans la liste");
     }
 
     int val = current->data;
     current = current->next;
 
-    // Skip any freed nodes to land on the next active one
+    // Saute les nœuds marqués comme libres
     while (current != nullptr && current != list->tailSentinel && current->isFree) {
         current = current->next;
     }
@@ -123,7 +135,7 @@ int DoublyLinkedList::Iterator::next() {
     return val;
 }
 
+// Renvoie un itérateur pointant sur le premier élément réel de la liste
 DoublyLinkedList::Iterator DoublyLinkedList::begin() {
-    // Start iterator from the first node after headSentinel
     return Iterator(headSentinel->next, this);
 }
